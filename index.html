@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>株式指標トラッカー</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js" defer></script>
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <h1>株式指標トラッカー</h1>
+      <p>決算資料から拾った数字を時系列で記録し、銘柄ごとに見える化できます。</p>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2>銘柄登録</h2>
+        <form id="stock-form" class="grid-form">
+          <label>
+            銘柄コード
+            <input id="ticker" name="ticker" required placeholder="例: 7203" />
+          </label>
+          <label>
+            銘柄名
+            <input id="stock-name" name="name" required placeholder="例: トヨタ自動車" />
+          </label>
+          <button type="submit">銘柄を追加</button>
+        </form>
+        <div id="stock-list" class="chip-list"></div>
+      </section>
+
+      <section class="card">
+        <h2>指標を記録</h2>
+        <form id="record-form" class="grid-form">
+          <label>
+            銘柄
+            <select id="record-ticker" required></select>
+          </label>
+          <label>
+            日付
+            <input id="record-date" type="date" required />
+          </label>
+          <label>
+            株価
+            <input id="price" type="number" step="0.01" min="0" required />
+          </label>
+          <label>
+            EPS
+            <input id="eps" type="number" step="0.01" />
+          </label>
+          <label>
+            BPS
+            <input id="bps" type="number" step="0.01" />
+          </label>
+          <label>
+            PER（空欄なら自動計算）
+            <input id="per" type="number" step="0.01" min="0" />
+          </label>
+          <label>
+            PBR（空欄なら自動計算）
+            <input id="pbr" type="number" step="0.01" min="0" />
+          </label>
+          <label class="full">
+            メモ
+            <textarea id="memo" rows="2" placeholder="決算補足など"></textarea>
+          </label>
+          <button type="submit">記録を保存</button>
+        </form>
+      </section>
+
+      <section class="card">
+        <h2>画像から補助入力（任意）</h2>
+        <p class="hint">画像のテキスト認識を使って、PER / PBR / EPS / 株価などをフォームに自動転記します。精度は画像品質に依存します。</p>
+        <div class="grid-form">
+          <label class="full">
+            画像アップロード
+            <input id="ocr-image" type="file" accept="image/*" />
+          </label>
+          <button id="ocr-run" type="button">画像を読み取ってフォームに反映</button>
+          <p id="ocr-status" class="hint"></p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>記録一覧（時系列）</h2>
+        <div class="toolbar">
+          <label>
+            銘柄で絞り込み
+            <select id="filter-ticker">
+              <option value="all">すべて</option>
+            </select>
+          </label>
+          <label>
+            グラフ指標
+            <select id="metric-select">
+              <option value="price">株価</option>
+              <option value="eps">EPS</option>
+              <option value="bps">BPS</option>
+              <option value="per">PER</option>
+              <option value="pbr">PBR</option>
+            </select>
+          </label>
+          <button id="export-json" type="button">JSONエクスポート</button>
+          <label class="import-btn">
+            JSONインポート
+            <input id="import-json" type="file" accept="application/json" hidden />
+          </label>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>日付</th>
+                <th>銘柄</th>
+                <th>株価</th>
+                <th>EPS</th>
+                <th>BPS</th>
+                <th>PER</th>
+                <th>PBR</th>
+                <th>メモ</th>
+                <th>削除</th>
+              </tr>
+            </thead>
+            <tbody id="records-body"></tbody>
+          </table>
+        </div>
+
+        <canvas id="metric-chart" height="120"></canvas>
+      </section>
+    </main>
+  </body>
+</html>
